@@ -6,6 +6,8 @@
     <title>Modern Music Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+    <script src="filterLogic.js" defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,9 +20,79 @@
         </div>
 
         <div class="content-wrapper">
+            <div class="search-container mb-4 px-4">
+                <input type="text" id="searchInput" placeholder="Search by title, artist, album, filename..." class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-700" />
+            </div>
+
+            <div id="advancedFiltersArea" class="advanced-filters-container mb-4 p-3 mx-4 bg-gray-50 dark:bg-gray-800 rounded-md shadow">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                    <div>
+                        <label for="genreFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Genre:</label>
+                        <select id="genreFilter" name="genreFilter" class="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm">
+                            <option value="">All Genres</option>
+                            <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="yearFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Year:</label>
+                        <select id="yearFilter" name="yearFilter" class="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm">
+                            <option value="">All Years</option>
+                            <!-- Options will be populated by JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <button id="clearAdvancedFiltersBtn" class="w-full mt-5 p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="recentlyPlayedArea" class="mt-4 p-4 mx-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Recently Played</h3>
+                <div id="recentlyPlayedListContainer" class="max-h-48 overflow-y-auto text-sm">
+                    <!-- Recently played tracks will be populated here by JS -->
+                    <p class="text-gray-500 dark:text-gray-400">No tracks played recently, or history is loading.</p>
+                </div>
+            </div>
+
+            <div id="mostPlayedArea" class="mt-4 p-4 mx-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Most Played</h3>
+                <div id="mostPlayedListContainer" class="max-h-48 overflow-y-auto text-sm">
+                    <!-- Most played tracks will be populated here by JS -->
+                    <p class="text-gray-500 dark:text-gray-400">Play some tracks to see your most played!</p>
+                </div>
+            </div>
+
+            <div id="playQueueArea" class="mt-4 p-4 mx-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Up Next</h3>
+                    <button id="clearQueueBtn" title="Clear Queue" class="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-xs focus:outline-none focus:ring-2 focus:ring-red-400">
+                        Clear All
+                    </button>
+                </div>
+                <div id="playQueueListContainer" class="max-h-48 overflow-y-auto text-sm">
+                    <!-- Queued tracks will be populated here by JS -->
+                    <p class="text-gray-500 dark:text-gray-400">Queue is empty.</p>
+                </div>
+            </div>
+
+            <div id="lyricsArea" class="mt-4 p-4 mx-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Lyrics</h3>
+                <div id="lyricsContentContainer" class="max-h-60 overflow-y-auto text-sm text-gray-700 dark:text-gray-300 p-2 border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800">
+                    <!-- Lyrics will be populated here by JS -->
+                    <p id="lyricsPlaceholder" class="italic">No lyrics available for this track.</p>
+                </div>
+            </div>
+
+            <div class="album-art-container mb-4 text-center">
+                <img id="albumArtDisplay" src="" alt="Album Art" class="w-40 h-40 sm:w-48 sm:h-48 object-cover inline-block rounded-lg shadow-lg bg-gray-200">
+            </div>
+
             <div id="nowPlaying" class="text-center">
-                <p id="currentTrack" class="truncate">No track selected</p>
-                <p id="currentArtist" class="truncate">Select files to play</p>
+                <p id="currentTrackTitle" class="font-bold text-xl text-gray-800 truncate">No track selected</p>
+                <p id="currentTrackArtist" class="text-md text-gray-700 truncate">Select a directory to play</p>
+                <p id="currentTrackAlbum" class="text-sm text-gray-500 truncate">-</p>
             </div>
 
             <div class="progress-controls">
@@ -52,22 +124,100 @@
             </div>
 
             <div class="volume-control-area">
-                <i class="fas fa-volume-mute"></i>
-                <div class="volume-container">
+                <i id="muteToggleBtn" class="fas fa-volume-up cursor-pointer p-2 text-gray-600 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"></i>
+                <div class="volume-container mx-2"> <!-- Added mx-2 for spacing -->
                     <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
                 </div>
-                <i class="fas fa-volume-up"></i>
+                <i class="fas fa-volume-up p-2 text-gray-600 dark:text-gray-400"></i> <!-- Rightmost icon, purely decorative for now -->
             </div>
 
             <div class="file-input-area">
                  <label for="fileInput" class="file-input-label">
-                     <i class="fas fa-folder-open"></i> Select Music
+                     <i class="fas fa-folder-open"></i> Select Directory or Files
                  </label>
-                <input type="file" id="fileInput" accept="audio/*" multiple/>
+                <input type="file" id="fileInput" webkitdirectory directory multiple />
             </div>
 
+            <div class="multiple-playlist-manager mb-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
+                <h2 class="playlist-header text-lg font-semibold mb-2 text-white">My Playlists</h2>
+                <div class="flex items-center mb-2">
+                    <select id="playlistSelector" class="flex-grow p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-700">
+                        <!-- Options will be populated by JS -->
+                    </select>
+                    <button id="loadSelectedPlaylistBtn" title="Load Playlist" class="p-2 bg-indigo-500 text-white rounded-r-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
+                <div class="flex space-x-2">
+                    <input type="text" id="newPlaylistNameInput" placeholder="New playlist name..." class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-700">
+                    <button id="createPlaylistBtn" title="Create Playlist" class="p-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button id="deletePlaylistBtn" title="Delete Selected Playlist" class="p-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Equalizer Section -->
+            <div id="equalizerArea" class="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Audio Equalizer</h3>
+                    <div class="flex items-center space-x-3">
+                        <select id="eqPresets" class="p-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+                            <option value="custom">Custom</option>
+                            <option value="rock">Rock</option>
+                            <option value="jazz">Jazz</option>
+                            <option value="classical">Classical</option>
+                            <option value="pop">Pop</option>
+                            <option value="flat">Flat (Off)</option>
+                        </select>
+                        <button id="eqOnOff" title="Toggle Equalizer" class="p-1.5 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 text-sm">
+                            <i class="fas fa-power-off"></i> ON
+                        </button>
+                    </div>
+                </div>
+
+                <div id="eqBandsContainer" class="grid grid-cols-6 gap-x-2 gap-y-4 text-center">
+                    <!-- Preamp Slider -->
+                    <div class="eq-band">
+                        <label for="eqPreamp" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Pre</label>
+                        <input type="range" id="eqPreamp" class="eq-slider appearance-none w-full h-20 p-0 bg-transparent orientation-vertical" min="-12" max="12" step="1" value="0" data-band-type="preamp">
+                        <span id="eqPreampValue" class="block text-xs text-gray-500 dark:text-gray-400 mt-1">0 dB</span>
+                    </div>
+
+                    <!-- Frequency Band Sliders -->
+                    <div class="eq-band">
+                        <label for="eqBand0" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">60Hz</label>
+                        <input type="range" id="eqBand0" class="eq-slider appearance-none w-full h-20 p-0 bg-transparent orientation-vertical" min="-12" max="12" step="1" value="0" data-band-frequency="60">
+                        <span id="eqBand0Value" class="block text-xs text-gray-500 dark:text-gray-400 mt-1">0 dB</span>
+                    </div>
+                    <div class="eq-band">
+                        <label for="eqBand1" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">310Hz</label>
+                        <input type="range" id="eqBand1" class="eq-slider appearance-none w-full h-20 p-0 bg-transparent orientation-vertical" min="-12" max="12" step="1" value="0" data-band-frequency="310">
+                        <span id="eqBand1Value" class="block text-xs text-gray-500 dark:text-gray-400 mt-1">0 dB</span>
+                    </div>
+                    <div class="eq-band">
+                        <label for="eqBand2" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">1KHz</label>
+                        <input type="range" id="eqBand2" class="eq-slider appearance-none w-full h-20 p-0 bg-transparent orientation-vertical" min="-12" max="12" step="1" value="0" data-band-frequency="1000">
+                        <span id="eqBand2Value" class="block text-xs text-gray-500 dark:text-gray-400 mt-1">0 dB</span>
+                    </div>
+                    <div class="eq-band">
+                        <label for="eqBand3" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">6KHz</label>
+                        <input type="range" id="eqBand3" class="eq-slider appearance-none w-full h-20 p-0 bg-transparent orientation-vertical" min="-12" max="12" step="1" value="0" data-band-frequency="6000">
+                        <span id="eqBand3Value" class="block text-xs text-gray-500 dark:text-gray-400 mt-1">0 dB</span>
+                    </div>
+                    <div class="eq-band">
+                        <label for="eqBand4" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">12KHz</label>
+                        <input type="range" id="eqBand4" class="eq-slider appearance-none w-full h-20 p-0 bg-transparent orientation-vertical" min="-12" max="12" step="1" value="0" data-band-frequency="12000">
+                        <span id="eqBand4Value" class="block text-xs text-gray-500 dark:text-gray-400 mt-1">0 dB</span>
+                    </div>
+                </div>
+            </div>
+
+
             <div class="playlist-area">
-                <h2 class="playlist-header">Playlist</h2>
+                <h2 class="playlist-header" id="currentPlaylistTitleHeader">Playlist</h2> <!-- ID added for dynamic title -->
                 <div id="playlist">
                     <p class="p-4 text-gray-500 text-center text-sm">Add files to see the playlist.</p>
                 </div>

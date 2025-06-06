@@ -275,3 +275,110 @@ input[type="file"] { display: none; } /* Hide default input */
 #playlist::-webkit-scrollbar-track { background: transparent; }
 #playlist::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 #playlist::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
+/* Equalizer Styles */
+.orientation-vertical {
+    writing-mode: bt-lr; /* Bottom to top, left to right */
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    width: 8px; /* Width of the track */
+    height: 80px; /* Length of the slider */
+    padding: 0; /* Remove default padding */
+    margin: 0 auto; /* Center the slider in its container if needed */
+}
+
+.eq-slider {
+    cursor: pointer;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+.eq-slider::-webkit-slider-runnable-track {
+    width: 100%; /* Track takes full width of the input element */
+    height: 100%;
+    background: #e5e7eb; /* Tailwind bg-gray-200 */
+    border-radius: 3px;
+    border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+}
+.eq-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px; /* Width of the thumb */
+    height: 20px; /* Height of the thumb */
+    background: #818cf8; /* Tailwind indigo-400 */
+    border-radius: 50%;
+    margin-top: -6px; /* Adjust thumb to be centered on the track: (track_width - thumb_width) / 2, assuming track is wider for visual purposes if not using appearance:none on track parts */
+     /* For vertical sliders, margin-left might be needed if writing-mode flips dimensions */
+    transform: translateX(calc(50% - 4px)); /* Hacky way to center thumb on an 8px track */
+
+}
+/* Dark mode specific thumb */
+.dark .eq-slider::-webkit-slider-thumb {
+    background: #a78bfa; /* Tailwind purple-400 or similar */
+}
+.dark .eq-slider::-webkit-slider-runnable-track {
+    background: #4b5563; /* Tailwind dark:bg-gray-600 */
+    border: 1px solid #374151; /* Tailwind dark:border-gray-500 */
+}
+
+
+/* Mozilla Firefox */
+.eq-slider::-moz-range-track {
+    width: 100%;
+    height: 100%;
+    background: #e5e7eb;
+    border-radius: 3px;
+    border: 1px solid #d1d5db;
+}
+.eq-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #818cf8; /* Tailwind indigo-400 */
+    border-radius: 50%;
+    border: none; /* Important for Firefox */
+}
+/* Dark mode specific thumb for Firefox */
+.dark .eq-slider::-moz-range-thumb {
+     background: #a78bfa;
+}
+.dark .eq-slider::-moz-range-track {
+    background: #4b5563;
+    border: 1px solid #374151;
+}
+
+
+/* Styling for the container of each band slider + label + value */
+.eq-band {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Lyrics Display */
+#lyricsContentContainer {
+    white-space: pre-wrap; /* Preserves newlines and spaces, wraps text */
+    word-wrap: break-word; /* Breaks long words if necessary */
+    line-height: 1.6; /* Adjust for readability */
+}
+
+/* Drag and Drop Styles */
+.playlist-item.dragging {
+    opacity: 0.5;
+    background-color: #e0e7ff; /* Light indigo */
+}
+.dark .playlist-item.dragging {
+    background-color: #3730a3; /* Darker indigo for dark mode */
+}
+
+.drag-insertion-indicator {
+    height: 2px;
+    background-color: #6366f1; /* Indigo theme color */
+    width: 100%;
+    margin: -1px 0; /* Adjust to fit between items based on padding/margin */
+    pointer-events: none; /* Important so it doesn't interfere with drop events */
+}
+
+/* File Drag Over Styles */
+.player-container.file-drag-over {
+    border: 2px dashed #6366f1 !important; /* Ensure this border shows over others */
+    background-color: rgba(99, 102, 241, 0.05);
+}
